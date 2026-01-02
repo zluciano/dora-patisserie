@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Product, Order, OrderItem } from '@/lib/database.types'
 
@@ -22,8 +22,8 @@ const statusLabels: Record<string, string> = {
   cancelled: 'Cancelado',
 }
 
-export default function EditOrderPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function EditOrderPage() {
+  const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

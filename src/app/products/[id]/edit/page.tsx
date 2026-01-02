@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState, useCallback, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Product } from '@/lib/database.types'
 
 const categories = ['Macarons', 'Bolos', 'Tortas', 'Paes', 'Doces', 'Bebidas', 'Outros']
 
-export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function EditProductPage() {
+  const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
