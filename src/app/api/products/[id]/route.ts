@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 // GET single product
 export async function GET(
@@ -7,14 +7,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     if (!data) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
@@ -32,17 +32,17 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
     const body = await request.json()
-    
+
     const { data, error } = await supabase
       .from('products')
-      .update(body)
+      .update(body as never)
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return NextResponse.json(data)
   } catch (error) {
@@ -57,13 +57,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
     const { error } = await supabase
       .from('products')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -59,7 +59,7 @@ export default function EditProductPage() {
       })
 
       if (res.ok) {
-        router.push('/products')
+        router.push('/admin/products')
       } else {
         alert('Erro ao atualizar produto')
       }
@@ -80,9 +80,9 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl">
       <div className="mb-6">
-        <Link href="/products" className="text-brown-600 hover:text-brown-800">
+        <Link href="/admin/products" className="text-brown-600 hover:text-brown-800">
           &larr; Voltar para produtos
         </Link>
       </div>
@@ -161,7 +161,7 @@ export default function EditProductPage() {
             <button type="submit" className="btn-primary" disabled={saving}>
               {saving ? 'Salvando...' : 'Salvar Alteracoes'}
             </button>
-            <Link href="/products" className="btn-secondary">
+            <Link href="/admin/products" className="btn-secondary">
               Cancelar
             </Link>
           </div>

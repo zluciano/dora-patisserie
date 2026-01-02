@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 // GET all products
 export async function GET() {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('products')
       .select('*')
       .order('category')
       .order('name')
-    
+
     if (error) throw error
     return NextResponse.json(data)
   } catch (error) {
@@ -22,15 +22,15 @@ export async function GET() {
 // POST create product
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const body = await request.json()
-    
+
     const { data, error } = await supabase
       .from('products')
-      .insert([body])
+      .insert([body] as never)
       .select()
       .single()
-    
+
     if (error) throw error
     return NextResponse.json(data, { status: 201 })
   } catch (error) {

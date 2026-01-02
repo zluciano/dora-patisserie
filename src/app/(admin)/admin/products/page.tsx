@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Product } from '@/lib/database.types'
+import { formatPrice } from '@/lib/utils'
 
-export default function ProductsPage() {
+export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -29,7 +30,7 @@ export default function ProductsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm('Tem certeza que deseja excluir este produto?')) return
-    
+
     setDeleting(id)
     try {
       const res = await fetch('/api/products/' + id, { method: 'DELETE' })
@@ -41,13 +42,6 @@ export default function ProductsPage() {
     } finally {
       setDeleting(null)
     }
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price)
   }
 
   // Group products by category
@@ -74,7 +68,7 @@ export default function ProductsPage() {
           <h1 className="font-serif text-2xl font-semibold text-brown-800">Produtos</h1>
           <p className="text-brown-600">Gerencie seu catalogo de produtos</p>
         </div>
-        <Link href="/products/new" className="btn-primary">
+        <Link href="/admin/products/new" className="btn-primary">
           + Novo Produto
         </Link>
       </div>
@@ -83,7 +77,7 @@ export default function ProductsPage() {
       {products.length === 0 ? (
         <div className="card text-center py-12">
           <p className="text-brown-500 mb-4">Nenhum produto cadastrado ainda.</p>
-          <Link href="/products/new" className="btn-primary">
+          <Link href="/admin/products/new" className="btn-primary">
             Adicionar primeiro produto
           </Link>
         </div>
@@ -105,8 +99,8 @@ export default function ProductsPage() {
                           {product.description || 'Sem descricao'}
                         </p>
                       </div>
-                      <span className={product.available 
-                          ? 'px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700' 
+                      <span className={product.available
+                          ? 'px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700'
                           : 'px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500'
                       }>
                         {product.available ? 'Disponivel' : 'Indisponivel'}
@@ -117,8 +111,8 @@ export default function ProductsPage() {
                         {formatPrice(product.price)}
                       </span>
                       <div className="flex gap-2">
-                        <Link 
-                          href={'/products/' + product.id + '/edit'}
+                        <Link
+                          href={'/admin/products/' + product.id + '/edit'}
                           className="text-sm text-brown-600 hover:text-brown-800"
                         >
                           Editar

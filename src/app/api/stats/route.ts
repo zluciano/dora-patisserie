@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 interface OrderRow {
   id: string
@@ -10,25 +10,25 @@ interface OrderRow {
 
 export async function GET() {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const today = new Date().toISOString().split('T')[0]
-    
+
     // Get order stats
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
       .select('id, status, delivery_date, total')
-    
+
     if (ordersError) throw ordersError
 
     // Get product count
     const { count: totalProducts, error: productsError } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
-    
+
     if (productsError) throw productsError
 
     const ordersList = (orders || []) as OrderRow[]
-    
+
     const stats = {
       totalOrders: ordersList.length,
       pendingOrders: ordersList.filter(o => o.status === 'pending' || o.status === 'confirmed').length,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
+import { Order, OrderItem } from '@/lib/database.types'
 
 // GET single order with items
 export async function GET(
@@ -7,15 +8,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
-    
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
       .eq('id', id)
-      .single()
-    
+      .single() as { data: Order | null; error: Error | null }
+
     if (orderError) throw orderError
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
@@ -24,11 +25,11 @@ export async function GET(
     const { data: items, error: itemsError } = await supabase
       .from('order_items')
       .select('*')
-      .eq('order_id', id)
-    
+      .eq('order_id', id) as { data: OrderItem[] | null; error: Error | null }
+
     if (itemsError) throw itemsError
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       ...order,
       items: items || []
     })
@@ -52,11 +53,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
     const body = await request.json()
     const { items, ...rest } = body
-    
+
     // Build update data
     const updateData: Record<string, unknown> = {}
     if (rest.customer_name !== undefined) updateData.customer_name = rest.customer_name
@@ -66,26 +67,26 @@ export async function PUT(
     if (rest.delivery_date !== undefined) updateData.delivery_date = rest.delivery_date
     if (rest.status !== undefined) updateData.status = rest.status
     if (rest.notes !== undefined) updateData.notes = rest.notes
-    
+
     // Recalculate total if items provided
     if (items) {
       updateData.total = items.reduce((sum: number, item: OrderItemInput) => sum + item.subtotal, 0)
     }
-    
+
     const { data, error } = await supabase
       .from('orders')
-      .update(updateData)
+      .update(updateData as never)
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
 
     // Update items if provided
     if (items) {
       // Delete existing items
       await supabase.from('order_items').delete().eq('order_id', id)
-      
+
       // Insert new items
       if (items.length > 0) {
         const orderItems = items.map((item: OrderItemInput) => ({
@@ -96,7 +97,7 @@ export async function PUT(
           unit_price: item.unit_price,
           subtotal: item.subtotal,
         }))
-        await supabase.from('order_items').insert(orderItems)
+        await supabase.from('order_items').insert(orderItems as never)
       }
     }
 
@@ -113,13 +114,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { id } = await params
     const { error } = await supabase
       .from('orders')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (error) {

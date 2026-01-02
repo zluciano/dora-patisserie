@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
+import { Order } from '@/lib/database.types'
 
 // GET all orders
 export async function GET() {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('orders')
       .select('*')
       .order('delivery_date', { ascending: true })
-      .order('created_at', { ascending: false })
-    
+      .order('created_at', { ascending: false }) as { data: Order[] | null; error: Error | null }
+
     if (error) throw error
     return NextResponse.json(data)
   } catch (error) {
@@ -30,20 +31,20 @@ interface OrderItemInput {
 // POST create order
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabase()
+    const supabase = await createClient()
     const body = await request.json()
     const { items, ...orderData } = body
-    
+
     // Calculate total
     const total = items?.reduce((sum: number, item: OrderItemInput) => sum + item.subtotal, 0) || 0
-    
-    // Create order
+
+    // Create order (user_id can be passed from checkout if authenticated)
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert([{ ...orderData, total }])
+      .insert([{ ...orderData, total }] as never)
       .select()
-      .single()
-    
+      .single() as { data: Order | null; error: Error | null }
+
     if (orderError) throw orderError
 
     // Create order items
@@ -56,11 +57,11 @@ export async function POST(request: NextRequest) {
         unit_price: item.unit_price,
         subtotal: item.subtotal,
       }))
-      
+
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(orderItems)
-      
+        .insert(orderItems as never)
+
       if (itemsError) throw itemsError
     }
 

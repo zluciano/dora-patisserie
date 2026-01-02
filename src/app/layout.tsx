@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Layout from "@/components/Layout";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Dora Patisserie - Gerenciamento de Pedidos",
-  description: "Sistema de gerenciamento de pedidos para Dora Patisserie",
+  title: "Dora Patisserie",
+  description: "Delicias artesanais feitas com amor",
 };
 
 export default function RootLayout({
@@ -14,8 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className="antialiased">
-        <Layout>{children}</Layout>
+      <body className="antialiased bg-cream-50 min-h-screen">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
