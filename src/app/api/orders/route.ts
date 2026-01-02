@@ -33,15 +33,19 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const body = await request.json()
-    const { items, ...orderData } = body
+    const { items, user_id, ...orderData } = body
 
     // Calculate total
     const total = items?.reduce((sum: number, item: OrderItemInput) => sum + item.subtotal, 0) || 0
 
-    // Create order (user_id can be passed from checkout if authenticated)
+    // Get authenticated user - only set user_id if we have a valid session
+    const { data: { user } } = await supabase.auth.getUser()
+    const validUserId = user?.id || null
+
+    // Create order
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert([{ ...orderData, total }] as never)
+      .insert([{ ...orderData, total, user_id: validUserId }] as never)
       .select()
       .single() as { data: Order | null; error: Error | null }
 
