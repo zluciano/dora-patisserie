@@ -70,9 +70,17 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(order, { status: 201 })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating order:', error)
-    const message = error instanceof Error ? error.message : 'Failed to create order'
-    return NextResponse.json({ error: message }, { status: 500 })
+    // Handle different error formats
+    let message = 'Failed to create order'
+    if (error && typeof error === 'object') {
+      if ('message' in error && typeof error.message === 'string') {
+        message = error.message
+      } else if ('error' in error && typeof error.error === 'string') {
+        message = error.error
+      }
+    }
+    return NextResponse.json({ error: message, details: String(error) }, { status: 500 })
   }
 }
